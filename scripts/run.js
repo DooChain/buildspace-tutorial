@@ -3,22 +3,38 @@ const main = async () => {
   // const waveContractFactory = await hre.ethers.getContractFactory("WavePortal");
   // const waveContract = await waveContractFactory.deploy();
   // await waveContract.deployed();
-  const waveContract = await hre.ethers.deployContract("WavePortal");
+  const waveContract = await hre.ethers.deployContract("WavePortal", {
+    value: hre.ethers.parseEther("0.01"),
+  });
 
   console.log("Contract deployed to:", waveContract.target);
   console.log("Contract deployed by:", owner.address);
 
-  await waveContract.getTotalWaves();
+  /*
+   * Get Contract balance
+   */
+  let contractBalance = await hre.ethers.provider.getBalance(
+    waveContract.target
+  );
+  console.log("Contract balance:", hre.ethers.formatEther(contractBalance));
 
-  const firstWaveTxn = await waveContract.wave();
-  await firstWaveTxn.wait();
+  /*
+   * Let's try two waves now
+   */
+  const waveTxn = await waveContract.wave("This is wave #1");
+  await waveTxn.wait();
 
-  await waveContract.getTotalWaves();
+  const waveTxn2 = await waveContract.wave("This is wave #2");
+  await waveTxn2.wait();
 
-  const secondWaveTxn = await waveContract.connect(randomPerson).wave();
-  await secondWaveTxn.wait();
+  /*
+   * Get Contract balance to see what happened!
+   */
+  contractBalance = await hre.ethers.provider.getBalance(waveContract.target);
+  console.log("Contract balance:", hre.ethers.formatEther(contractBalance));
 
-  await waveContract.getTotalWaves();
+  let allWaves = await waveContract.getAllWaves();
+  console.log(allWaves);
 };
 
 const runMain = async () => {
